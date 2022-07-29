@@ -1,11 +1,10 @@
 package course.concurrency.m2_async.cf.min_price;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static java.lang.Double.NaN;
 
@@ -24,17 +23,12 @@ public class PriceAggregator {
     }
 
     public double getMinPrice(long itemId) {
-        List<CompletableFuture<Double>> listCompletableFuture = new ArrayList<>();
-        for (int i = 0; i < shopIds.size(); i++) {
-            int shopId = i;
-            listCompletableFuture.add(CompletableFuture
-                    .supplyAsync(() -> priceRetriever.getPrice(itemId, shopId))
-                    .completeOnTimeout(NaN, 2500, TimeUnit.MILLISECONDS)
-                    .handle((res, ex) -> ex != null ? NaN : res));
-
-        }
-
-        return listCompletableFuture
+        return shopIds.stream()
+                .map(shopId -> CompletableFuture
+                        .supplyAsync(() -> priceRetriever.getPrice(itemId, shopId))
+                        .completeOnTimeout(NaN, 2900, TimeUnit.MILLISECONDS)
+                        .handle((res, ex) -> ex != null ? NaN : res))
+                .collect(Collectors.toList())
                 .stream()
                 .map(CompletableFuture::join)
                 .min(Double::compare)
