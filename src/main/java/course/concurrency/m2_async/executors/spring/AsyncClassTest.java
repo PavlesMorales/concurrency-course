@@ -14,6 +14,7 @@ public class AsyncClassTest {
     @Autowired
     public ApplicationContext context;
 
+    @Async
     @EventListener(ApplicationReadyEvent.class)
     public void actionAfterStartup() {
         runAsyncTask();

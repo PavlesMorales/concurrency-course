@@ -38,7 +38,7 @@ public class ReportServiceTests {
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.MINUTES);
         long end = System.currentTimeMillis();
-
+        System.out.println("Available processors: " + Runtime.getRuntime().availableProcessors());
         System.out.println("Rough execution time: " + (end - start));
     }
 }
