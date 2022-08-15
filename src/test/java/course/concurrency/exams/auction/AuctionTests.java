@@ -7,7 +7,6 @@ import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-@Disabled
 public class AuctionTests {
 
     private static final int TEST_COUNT = 10;
