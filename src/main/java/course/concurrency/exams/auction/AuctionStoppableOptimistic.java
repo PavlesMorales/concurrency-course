@@ -15,9 +15,9 @@ public class AuctionStoppableOptimistic implements AuctionStoppable {
     public boolean propose(Bid bid) {
         Bid lastBid;
         do {
-            lastBid = latestBid.get(new boolean[]{true});
-            boolean mark = latestBid.isMarked();
-            if (bid.price < lastBid.price || !mark) return false;
+            boolean[] mark = new boolean[1];
+            lastBid = latestBid.get(mark);
+            if (bid.price < lastBid.price || !mark[0]) return false;
         } while (!latestBid.compareAndSet(lastBid, bid, true, true));
 
         notifier.sendOutdatedMessage(lastBid);
@@ -31,7 +31,7 @@ public class AuctionStoppableOptimistic implements AuctionStoppable {
     public Bid stopAuction() {
         Bid lastBid;
         do {
-            lastBid = latestBid.get(new boolean[]{true});
+            lastBid = latestBid.get(new boolean[1]);
         } while (!latestBid.attemptMark(lastBid, false));
 
         return lastBid;
