@@ -25,7 +25,7 @@ public class AuctionStoppableOptimistic implements AuctionStoppable {
     }
 
     public Bid getLatestBid() {
-        return latestBid.get(new boolean[]{true});
+        return latestBid.get(new boolean[1]);
     }
 
     public Bid stopAuction() {
