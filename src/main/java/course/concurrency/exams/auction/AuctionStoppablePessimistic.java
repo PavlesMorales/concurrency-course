@@ -19,6 +19,7 @@ public class AuctionStoppablePessimistic implements AuctionStoppable {
                     Bid last = latestBid;
                     latestBid = bid;
                     notifier.sendOutdatedMessage(last);
+                    return true;
                 }
             }
         }
