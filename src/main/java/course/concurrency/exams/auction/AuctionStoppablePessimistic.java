@@ -14,14 +14,13 @@ public class AuctionStoppablePessimistic implements AuctionStoppable {
 
     public boolean propose(Bid bid) {
         if (bid.price > latestBid.price && !stop) {
-            Bid last = latestBid;
             synchronized (lock) {
                 if (bid.price > latestBid.price && !stop) {
-                    last = latestBid;
+                    Bid last = latestBid;
                     latestBid = bid;
+                    notifier.sendOutdatedMessage(last);
                 }
             }
-            notifier.sendOutdatedMessage(last);
         }
         return false;
     }
