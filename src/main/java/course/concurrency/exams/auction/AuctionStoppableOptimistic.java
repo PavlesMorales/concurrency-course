@@ -15,9 +15,8 @@ public class AuctionStoppableOptimistic implements AuctionStoppable {
     public boolean propose(Bid bid) {
         Bid lastBid;
         do {
-            boolean[] mark = new boolean[1];
-            lastBid = latestBid.get(mark);
-            if (bid.price < lastBid.price || !mark[0]) return false;
+            lastBid = latestBid.getReference();
+            if (bid.price < lastBid.price || !latestBid.isMarked()) return false;
         } while (!latestBid.compareAndSet(lastBid, bid, true, true));
 
         notifier.sendOutdatedMessage(lastBid);
