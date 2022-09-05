@@ -3,44 +3,60 @@ package course.concurrency.m3_shared.immutable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class OrderService {
 
-    private Map<Long, Order> currentOrders = new HashMap<>();
-    private long nextId = 0L;
+    private final Map<Long, Order> currentOrders = new HashMap<>();
+    private final AtomicLong nextId = new AtomicLong(0L);
 
-    private synchronized long nextId() {
-        return nextId++;
+    private long nextId() {
+        return nextId.incrementAndGet();
     }
 
-    public synchronized long createOrder(List<Item> items) {
+    public long createOrder(List<Item> items) {
         long id = nextId();
-        Order order = new Order(items);
-        order.setId(id);
-        currentOrders.put(id, order);
+        currentOrders.put(id, new Order(id, items));
         return id;
     }
 
-    public synchronized void updatePaymentInfo(long orderId, PaymentInfo paymentInfo) {
-        currentOrders.get(orderId).setPaymentInfo(paymentInfo);
+    public void updatePaymentInfo(long orderId, PaymentInfo paymentInfo) {
+        currentOrders.merge(
+                orderId,
+                currentOrders.get(orderId),
+                (oldest, newest) ->
+                        oldest.getPaymentInfo() != null ? oldest : newest.withPaymentInfo(paymentInfo));
+
         if (currentOrders.get(orderId).checkStatus()) {
             deliver(currentOrders.get(orderId));
         }
     }
 
-    public synchronized void setPacked(long orderId) {
-        currentOrders.get(orderId).setPacked(true);
+    public void setPacked(long orderId) {
+        currentOrders.merge(
+                orderId,
+                currentOrders.get(orderId),
+                (oldest, newest) ->
+                        oldest.isPacked() ? oldest : newest.withPacked(true));
+
         if (currentOrders.get(orderId).checkStatus()) {
             deliver(currentOrders.get(orderId));
         }
     }
 
-    private synchronized void deliver(Order order) {
-        /* ... */
-        currentOrders.get(order.getId()).setStatus(Order.Status.DELIVERED);
+    private void deliver(Order order) {
+        currentOrders.merge(
+                order.getId(),
+                order,
+                (oldest, newest) ->
+                        isDelivered(oldest.getId()) ? oldest : newest.withStatus(Order.Status.DELIVERED));
     }
 
-    public synchronized boolean isDelivered(long orderId) {
+    public Order get(long id) {
+        return currentOrders.get(id);
+    }
+
+    public boolean isDelivered(long orderId) {
         return currentOrders.get(orderId).getStatus().equals(Order.Status.DELIVERED);
     }
 }
