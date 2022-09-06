@@ -1,13 +1,13 @@
 package course.concurrency.m3_shared.immutable;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class OrderService {
 
-    private final Map<Long, Order> currentOrders = new HashMap<>();
+    private final Map<Long, Order> currentOrders = new ConcurrentHashMap<>();
     private final AtomicLong nextId = new AtomicLong(0L);
 
     private long nextId() {
@@ -21,35 +21,23 @@ public class OrderService {
     }
 
     public void updatePaymentInfo(long orderId, PaymentInfo paymentInfo) {
-        currentOrders.merge(
-                orderId,
-                currentOrders.get(orderId),
-                (oldest, newest) ->
-                        oldest.getPaymentInfo() != null ? oldest : newest.withPaymentInfo(paymentInfo));
-
+        currentOrders.computeIfPresent(orderId, (key, value) -> value.withPaymentInfo(paymentInfo));
         if (currentOrders.get(orderId).checkStatus()) {
             deliver(currentOrders.get(orderId));
         }
     }
 
     public void setPacked(long orderId) {
-        currentOrders.merge(
-                orderId,
-                currentOrders.get(orderId),
-                (oldest, newest) ->
-                        oldest.isPacked() ? oldest : newest.withPacked(true));
-
+        currentOrders.computeIfPresent(orderId, (key, value) -> value.withPacked(true));
         if (currentOrders.get(orderId).checkStatus()) {
             deliver(currentOrders.get(orderId));
         }
     }
 
     private void deliver(Order order) {
-        currentOrders.merge(
-                order.getId(),
-                order,
-                (oldest, newest) ->
-                        isDelivered(oldest.getId()) ? oldest : newest.withStatus(Order.Status.DELIVERED));
+        if (!isDelivered(order.getId())) {
+            currentOrders.computeIfPresent(order.getId(), (key, value) -> value.withStatus(Order.Status.DELIVERED));
+        }
     }
 
     public Order get(long id) {
