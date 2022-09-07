@@ -21,16 +21,16 @@ public class OrderService {
     }
 
     public void updatePaymentInfo(long orderId, PaymentInfo paymentInfo) {
-        currentOrders.computeIfPresent(orderId, (key, value) -> value.withPaymentInfo(paymentInfo));
-        if (currentOrders.get(orderId).checkStatus()) {
-            deliver(currentOrders.get(orderId));
+        Order order = currentOrders.computeIfPresent(orderId, (key, value) -> value.withPaymentInfo(paymentInfo));
+        if (order.checkStatus()) {
+            deliver(order);
         }
     }
 
     public void setPacked(long orderId) {
-        currentOrders.computeIfPresent(orderId, (key, value) -> value.withPacked(true));
-        if (currentOrders.get(orderId).checkStatus()) {
-            deliver(currentOrders.get(orderId));
+        Order order = currentOrders.computeIfPresent(orderId, (key, value) -> value.withPacked(true));
+        if (order.checkStatus()) {
+            deliver(order);
         }
     }
 
