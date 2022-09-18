@@ -6,7 +6,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class MountTableRefresherThread extends Thread {
 
-    private boolean success;
+    private volatile boolean success;
     /** Admin server on which refreshed to be invoked. */
     private String adminAddress;
     private CountDownLatch countDownLatch;
