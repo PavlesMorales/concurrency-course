@@ -110,16 +110,16 @@ public class MountTableRefresherService {
         return adminAddress.contains("local");
     }
 
-    private void logResult(List<MountTableRefresher> refreshThreads) {
+    private void logResult(List<MountTableRefresher> mountTableRefreshers) {
         int successCount = 0;
         int failureCount = 0;
-        for (MountTableRefresher mountTableRefreshThread : refreshThreads) {
-            if (mountTableRefreshThread.isSuccess()) {
+        for (MountTableRefresher mountTableRefresh : mountTableRefreshers) {
+            if (mountTableRefresh.isSuccess()) {
                 successCount++;
             } else {
                 failureCount++;
                 // remove RouterClient from cache so that new client is created
-                removeFromCache(mountTableRefreshThread.getAdminAddress());
+                removeFromCache(mountTableRefresh.getAdminAddress());
             }
         }
 
