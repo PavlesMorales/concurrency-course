@@ -75,13 +75,10 @@ public class MountTableRefresherService {
                 .map(this::createMountTableRefreshThread)
                 .collect(Collectors.toList());
 
-        CountDownLatch latch = new CountDownLatch(refresherThreads.size());
-
         CompletableFuture.allOf(
                 refresherThreads
                         .stream()
-                        .peek(refresherThread -> refresherThread.setCountDownLatch(latch))
-                        .map(CompletableFuture::runAsync)
+                        .map(refresherThread -> CompletableFuture.runAsync(refresherThread::run))
                         .map(this::completeOnTimeout)
                         .toArray(CompletableFuture[]::new))
                 .join();
@@ -102,29 +99,6 @@ public class MountTableRefresherService {
 
     private void removeFromCache(String adminAddress) {
         routerClientsCache.invalidate(adminAddress);
-    }
-
-    private void invokeRefresh(List<MountTableRefresherThread> refreshThreads) {
-        CountDownLatch countDownLatch = new CountDownLatch(refreshThreads.size());
-        // start all the threads
-        for (MountTableRefresherThread refThread : refreshThreads) {
-            refThread.setCountDownLatch(countDownLatch);
-            refThread.start();
-        }
-        try {
-            /*
-             * Wait for all the thread to complete, await method returns false if
-             * refresh is not finished within specified time
-             */
-            boolean allReqCompleted =
-                    countDownLatch.await(cacheUpdateTimeout, TimeUnit.MILLISECONDS);
-            if (!allReqCompleted) {
-                log("Not all router admins updated their cache");
-            }
-        } catch (InterruptedException e) {
-            log("Mount table cache refresher was interrupted.");
-        }
-        logResult(refreshThreads);
     }
 
     private boolean isLocalAdmin(String adminAddress) {
