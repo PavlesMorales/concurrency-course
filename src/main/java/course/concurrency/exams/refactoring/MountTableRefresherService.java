@@ -66,35 +66,40 @@ public class MountTableRefresherService {
      */
     public void refresh() {
 
-        List<MountTableRefresherThread> refresherThreads = routerStore
+        List<MountTableRefresher> tableRefreshers = routerStore
                 .getCachedRecords()
                 .stream()
                 .filter(Objects::nonNull)
                 .map(Others.RouterState::getAdminAddress)
                 .filter(adminAddress -> adminAddress.length() != 0)
-                .map(this::createMountTableRefreshThread)
+                .map(this::createMountTableRefresh)
                 .collect(Collectors.toList());
 
         CompletableFuture.allOf(
-                refresherThreads
+                tableRefreshers
                         .stream()
-                        .map(refresherThread -> CompletableFuture.runAsync(refresherThread::run))
-                        .map(this::completeOnTimeout)
+                        .map(tableRefresher -> CompletableFuture.runAsync(tableRefresher::run))
+                        .map(future -> future
+                                .completeOnTimeout(null, cacheUpdateTimeout, TimeUnit.MILLISECONDS)
+                                .exceptionally(ex -> {
+                                    log(ex.getMessage());
+                                    return null;
+                                }))
                         .toArray(CompletableFuture[]::new))
                 .join();
 
-        logResult(refresherThreads);
+        logResult(tableRefreshers);
     }
 
-    public MountTableRefresherThread createMountTableRefreshThread(String address) {
+    public MountTableRefresher createMountTableRefresh(String address) {
 
         return address.contains("local") ?
-                new MountTableRefresherThread(new Others.MountTableManager("local"), address) :
-                new MountTableRefresherThread(new Others.MountTableManager(address), address);
+                new MountTableRefresher(new Others.MountTableManager("local"), address) :
+                new MountTableRefresher(new Others.MountTableManager(address), address);
     }
 
-    protected MountTableRefresherThread getLocalRefresher(String adminAddress) {
-        return new MountTableRefresherThread(new Others.MountTableManager("local"), adminAddress);
+    protected MountTableRefresher getLocalRefresher(String adminAddress) {
+        return new MountTableRefresher(new Others.MountTableManager("local"), adminAddress);
     }
 
     private void removeFromCache(String adminAddress) {
@@ -105,10 +110,10 @@ public class MountTableRefresherService {
         return adminAddress.contains("local");
     }
 
-    private void logResult(List<MountTableRefresherThread> refreshThreads) {
+    private void logResult(List<MountTableRefresher> refreshThreads) {
         int successCount = 0;
         int failureCount = 0;
-        for (MountTableRefresherThread mountTableRefreshThread : refreshThreads) {
+        for (MountTableRefresher mountTableRefreshThread : refreshThreads) {
             if (mountTableRefreshThread.isSuccess()) {
                 successCount++;
             } else {
@@ -139,14 +144,5 @@ public class MountTableRefresherService {
 
     public void setRouterStore(Others.RouterStore routerStore) {
         this.routerStore = routerStore;
-    }
-
-    private CompletableFuture<Void> completeOnTimeout(CompletableFuture<Void> future) {
-
-        return future.completeOnTimeout(null, cacheUpdateTimeout, TimeUnit.MILLISECONDS)
-                .exceptionally(ex -> {
-                    log(ex.getMessage());
-                    return null;
-                });
     }
 }

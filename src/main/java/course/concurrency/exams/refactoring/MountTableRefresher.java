@@ -4,7 +4,7 @@ import static course.concurrency.exams.refactoring.Others.*;
 
 import java.util.concurrent.CountDownLatch;
 
-public class MountTableRefresherThread {
+public class MountTableRefresher {
 
     private volatile boolean success;
     /**
@@ -13,8 +13,8 @@ public class MountTableRefresherThread {
     private String adminAddress;
     private MountTableManager manager;
 
-    public MountTableRefresherThread(MountTableManager manager,
-                                     String adminAddress) {
+    public MountTableRefresher(MountTableManager manager,
+                               String adminAddress) {
         this.manager = manager;
         this.adminAddress = adminAddress;
     }

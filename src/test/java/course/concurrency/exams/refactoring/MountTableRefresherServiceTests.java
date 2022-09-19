@@ -8,7 +8,6 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.filtering;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
@@ -54,15 +53,15 @@ public class MountTableRefresherServiceTests {
         when(routerStore.getCachedRecords()).thenReturn(states);
         // smth more
 
-        List<MountTableRefresherThread> collect = addresses
+        List<MountTableRefresher> collect = addresses
                 .stream()
-                .map(address -> new MountTableRefresherThread(manager, address))
+                .map(address -> new MountTableRefresher(manager, address))
                 .collect(toList());
 
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(0));
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(1));
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(2));
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(3));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(0));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(1));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(2));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(3));
 
         when(manager.refresh()).thenReturn(true);
 
@@ -89,15 +88,15 @@ public class MountTableRefresherServiceTests {
         when(routerStore.getCachedRecords()).thenReturn(states);
         // smth more
 
-        List<MountTableRefresherThread> collect = addresses
+        List<MountTableRefresher> collect = addresses
                 .stream()
-                .map(address -> new MountTableRefresherThread(manager, address))
+                .map(address -> new MountTableRefresher(manager, address))
                 .collect(toList());
 
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(0));
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(1));
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(2));
-        when(mockedService.createMountTableRefreshThread(anyString())).thenReturn(collect.get(3));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(0));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(1));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(2));
+        when(mockedService.createMountTableRefresh(anyString())).thenReturn(collect.get(3));
 
         when(manager.refresh()).thenReturn(false);
 
@@ -124,10 +123,10 @@ public class MountTableRefresherServiceTests {
         when(routerStore.getCachedRecords()).thenReturn(states);
         // smth more
 
-        when(mockedService.createMountTableRefreshThread(states.get(0).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "1231"));
-        when(mockedService.createMountTableRefreshThread(states.get(1).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "local"));
-        when(mockedService.createMountTableRefreshThread(states.get(2).getAdminAddress())).thenReturn(new MountTableRefresherThread(managerFail, "789"));
-        when(mockedService.createMountTableRefreshThread(states.get(3).getAdminAddress())).thenReturn(new MountTableRefresherThread(managerFail, "local"));
+        when(mockedService.createMountTableRefresh(states.get(0).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "1231"));
+        when(mockedService.createMountTableRefresh(states.get(1).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "local"));
+        when(mockedService.createMountTableRefresh(states.get(2).getAdminAddress())).thenReturn(new MountTableRefresher(managerFail, "789"));
+        when(mockedService.createMountTableRefresh(states.get(3).getAdminAddress())).thenReturn(new MountTableRefresher(managerFail, "local"));
 
         when(manager.refresh()).thenReturn(true);
         when(managerFail.refresh()).thenReturn(false);
@@ -155,10 +154,10 @@ public class MountTableRefresherServiceTests {
         when(routerStore.getCachedRecords()).thenReturn(states);
         // smth more
 
-        when(mockedService.createMountTableRefreshThread(states.get(0).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "1231"));
-        when(mockedService.createMountTableRefreshThread(states.get(1).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "local"));
-        when(mockedService.createMountTableRefreshThread(states.get(2).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "789"));
-        when(mockedService.createMountTableRefreshThread(states.get(3).getAdminAddress())).thenReturn(new MountTableRefresherThread(managerFail, "local"));
+        when(mockedService.createMountTableRefresh(states.get(0).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "1231"));
+        when(mockedService.createMountTableRefresh(states.get(1).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "local"));
+        when(mockedService.createMountTableRefresh(states.get(2).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "789"));
+        when(mockedService.createMountTableRefresh(states.get(3).getAdminAddress())).thenReturn(new MountTableRefresher(managerFail, "local"));
 
         when(manager.refresh()).thenReturn(true);
         when(managerFail.refresh()).thenThrow(new NullPointerException());
@@ -185,10 +184,10 @@ public class MountTableRefresherServiceTests {
         when(routerStore.getCachedRecords()).thenReturn(states);
         // smth more
 
-        when(mockedService.createMountTableRefreshThread(states.get(0).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "1231"));
-        when(mockedService.createMountTableRefreshThread(states.get(1).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "local"));
-        when(mockedService.createMountTableRefreshThread(states.get(2).getAdminAddress())).thenReturn(new MountTableRefresherThread(manager, "789"));
-        when(mockedService.createMountTableRefreshThread(states.get(3).getAdminAddress())).thenReturn(new MountTableRefresherThread(managerFail, "local"));
+        when(mockedService.createMountTableRefresh(states.get(0).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "1231"));
+        when(mockedService.createMountTableRefresh(states.get(1).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "local"));
+        when(mockedService.createMountTableRefresh(states.get(2).getAdminAddress())).thenReturn(new MountTableRefresher(manager, "789"));
+        when(mockedService.createMountTableRefresh(states.get(3).getAdminAddress())).thenReturn(new MountTableRefresher(managerFail, "local"));
 
         when(manager.refresh()).thenReturn(true);
         when(managerFail.refresh()).thenAnswer(invocationOnMock -> {
